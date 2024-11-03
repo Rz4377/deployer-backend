@@ -5,14 +5,14 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import simpleGit from 'simple-git';
 import cors from 'cors';
-import { getType } from 'mime'; // Named import
-import { uploadDir } from './upload'; // Import the upload function
+import { getType } from 'mime'; 
+import { uploadDir } from './upload'; 
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json()); // Add this to parse JSON request body
+app.use(express.json()); 
 
 function getRandomId() {
     const length = 8;
@@ -57,13 +57,9 @@ async function buildWithDocker(clonePath: string, repoName: string) {
     await runCmd(`sudo docker create --name ${repoName}_container ${repoName}`)
     console.log(`Container created from image: ${repoName}`);
 
-    // Copy the dist folder from the container to the host machine
     const localDistPath = path.join(clonePath, 'dist');
     await runCmd(`sudo docker cp ${repoName}_container:/app/dist ${localDistPath}`);
 
-    console.log(`Copied dist folder to: ${localDistPath}`);
-
-    // Clean up the container
     await runCmd(`sudo docker rm ${repoName}_container`);
     console.log(`Removed container: ${repoName}_container`);
 }
@@ -71,7 +67,7 @@ async function buildWithDocker(clonePath: string, repoName: string) {
 app.post('/deploy', async (req, res) => {
     const gitUrl = req.body.url;
     console.log(gitUrl)
-    const repoName = `${getRandomId()}`; // Unique name for Docker image
+    const repoName = `${getRandomId()}`; // just to give unique name for Docker image
     console.log(__dirname)
     const clonePath = path.join(__dirname, `output/${repoName}`);
     console.log(clonePath)
@@ -83,7 +79,7 @@ app.post('/deploy', async (req, res) => {
             console.log(`Created output directory at: ${outputPath}`);
         }
 
-        // Step 1: Clone the repository
+        // Step 1: Clone the repo
         console.log(`Cloning repository to ${clonePath}...`);
         await simpleGit().clone(gitUrl, clonePath).catch((err) => {
             console.error('Git clone failed:', err);
@@ -107,7 +103,7 @@ app.post('/deploy', async (req, res) => {
         const s3BucketName = process.env.S3_BUCKET || '';
         await uploadDir(`${clonePath}/dist`, repoName,s3BucketName);
         
-        const siteUrl = `https://${repoName}.deployer.tallentgallery.online/index.html`;
+        const siteUrl = `https://${repoName}.deployer.tallentgallery.online/`;
         console.log(siteUrl)
         res.json({ siteUrl });
     } 
